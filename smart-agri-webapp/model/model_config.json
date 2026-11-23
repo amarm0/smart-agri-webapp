@@ -1,0 +1,38 @@
+{
+ "config": {
+  "arch": "efficientnet_b0",
+  "head": "linear",
+  "dropout": 0.3,
+  "lr": 0.0010208128465557418,
+  "wd": 0.0017150882346504794,
+  "bs": 32,
+  "bb_mult": 0.3,
+  "freeze_epochs": 0,
+  "ls": 0.0
+ },
+ "classes": [
+  "AnnualCrop",
+  "Forest",
+  "HerbaceousVegetation",
+  "Highway",
+  "Industrial",
+  "Pasture",
+  "PermanentCrop",
+  "Residential",
+  "River",
+  "SeaLake"
+ ],
+ "img_size": 128,
+ "normalize_mean": [
+  0.48500001430511475,
+  0.4560000002384186,
+  0.4059999883174896
+ ],
+ "normalize_std": [
+  0.2290000021457672,
+  0.2240000069141388,
+  0.22499999403953552
+ ],
+ "test_accuracy": 0.9891358024691358,
+ "test_macro_f1": 0.9886404712527928
+}
