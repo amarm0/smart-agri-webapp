@@ -1,24 +1,21 @@
-# واجهة محلية لتصنيف الأراضي (Smart Agriculture — Milestone 3)
+# Local Land-Use Classification Web Interface (Smart Agriculture — Milestone 3)
 
-واجهة ويب بسيطة تعمل **محليًا فقط على جهازك** (لا رفع لأي Cloud). ترفع صورة قمر صناعي
-(على نمط EuroSAT) وتُخبرك النموذج المدرَّب في الـ notebook بالتصنيف التفصيلي (10 فئات)
-وبفئة الكتيّب (Agriculture / Water / Urban / Roads / Trees) المطابقة لِـ Part F من الـ notebook.
+A lightweight web application that runs **locally on your machine** (no cloud uploads required). Upload a satellite image (EuroSAT-style), and the trained model from the notebook will predict both the detailed land-use class (10 classes) and the grouped booklet category (`Agriculture` / `Water` / `Urban` / `Roads` / `Trees`) matching **Part F** of the notebook.
 
-## 1) شغّل الـ Notebook أولاً حتى آخر خلية
+## 1) Run the Notebook Through the Final Cell
 
-شغّل `Smart_Agriculture_M3_Optimization.ipynb` كاملاً (على Colab بـ GPU، أو محليًا إن
-توفر عندك GPU/وقت كافٍ). آخر خلايا في الـ notebook (قسم "Deliverables & summary") تحفظ:
+Execute the entire `Smart_Agriculture_M3_Optimization.ipynb` notebook (on Google Colab with a GPU, or locally if you have a GPU/sufficient time). The final cells in the notebook (under the *"Deliverables & summary"* section) export the following two files:
 
-```
+```text
 outputs/models/eurosat_resnet_final.pt
 outputs/models/model_config.json
 ```
 
-## 2) انسخ ملفي النموذج إلى هذا المشروع
+## 2) Copy the Model Files to This Project
 
-انسخ الملفين السابقين إلى مجلد `model/` هنا، بحيث يصبح الشكل:
+Place the two exported files into the `model/` directory inside this project so the folder structure looks like this:
 
-```
+```text
 smart-agri-webapp/
   model/
     eurosat_resnet_final.pt
@@ -28,52 +25,41 @@ smart-agri-webapp/
   ...
 ```
 
-## 3) ثبّت المتطلبات (مرة واحدة)
+## 3) Install Dependencies (One-Time Setup)
 
 ```bash
 cd smart-agri-webapp
 python -m venv .venv
-source .venv/bin/activate        # على ويندوز: .venv\Scripts\activate
+source .venv/bin/activate        # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-> ملاحظة: `torch`/`torchvision` بدون GPU تكفي تمامًا للـ inference (تصنيف صورة واحدة)
-> سرعتها ممتازة على CPU، فلا داعي لإعداد CUDA على جهازك المحلي.
+> **Note:** CPU-only `torch`/`torchvision` is completely sufficient for single-image inference and runs very fast locally, so there is no need to configure CUDA on your machine.
 
-## 4) شغّل السيرفر المحلي
+## 4) Start the Local Server
 
 ```bash
 python app.py
 ```
 
-ثم افتح المتصفح على:
+Then open your browser and navigate to:
 
-```
+```text
 http://127.0.0.1:5000
 ```
 
-ارفع صورة واضغط "تصنيف الصورة". كل شيء — رفع الصورة، التحليل، والنتيجة — يحدث على جهازك
-فقط عبر `localhost`؛ لا يوجد أي اتصال بالإنترنت أو بأي خدمة سحابية.
+Upload an image and click **"Classify Image"** (*"تصنيف الصورة"*). Everything—image upload, preprocessing, inference, and result display—happens strictly on your device via `localhost`, with no internet connection or cloud services involved.
 
-## كيف تعمل الواجهة
+## How It Works
 
-- `app.py`: خادم Flask صغير — صفحة رفع (`/`) ونقطة نهاية تصنيف (`/predict`).
-- `model_def.py`: نفس تعريف الشبكة (`build_model` / `make_head`) ونفس خطوات تجهيز الصورة
-  (`preprocess_image`) الموجودة في الـ notebook، حتى تُحمَّل الأوزان المحفوظة بشكل صحيح
-  وتُعطي نفس نتائج الـ notebook تمامًا. كما يحتوي على خريطة الفئات العشر → فئات الكتيّب
-  الخمس (Agriculture/Water/Urban/Roads/Trees) المطابقة لِـ Part F.
-- `templates/index.html` + `static/style.css`: واجهة رفع بالسحب والإفلات (drag & drop)
-  بالعربية، تعرض الفئة التفصيلية + فئة الكتيّب + نسبة الثقة + أفضل احتمالين آخرين.
+- **`app.py`**: A lightweight Flask server handling the upload page (`/`) and the prediction endpoint (`/predict`).
+- **`model_def.py`**: Replicates the exact model architecture (`build_model` / `make_head`) and image preprocessing pipeline (`preprocess_image`) from the notebook to ensure saved weights load properly and produce identical results. It also contains the mapping from the 10 EuroSAT classes to the 5 grouped categories (`Agriculture`, `Water`, `Urban`, `Roads`, `Trees`) per Part F.
+- **`templates/index.html` + `static/style.css`**: A clean drag-and-drop upload interface displaying the detailed class, grouped category, confidence score, and the top-2 alternative predictions.
 
-## إذا ظهرت رسالة "لم يتم العثور على ملفات النموذج"
+## Troubleshooting: "Model files not found" Error
 
-يعني أن `model/eurosat_resnet_final.pt` أو `model/model_config.json` غير موجودين بعد —
-ارجع للخطوة 1 و2.
+If you see a message indicating that the model files were not found, it means `model/eurosat_resnet_final.pt` or `model/model_config.json` is missing from the `model/` folder. Please revisit **Steps 1 and 2**.
 
-## ملاحظة عن موضوع المشروع
+## Note on Project Scope
 
-ملف الـ notebook الذي أرسلته (EuroSAT — تصنيف صور أقمار صناعية إلى 10 فئات أرض، مُجمّعة
-في Agriculture/Water/Urban/Roads/Trees) يختلف عن موضوع "Crop Production in India" الموصوف
-في Project Proposal.pdf (بيانات جدولية عن إنتاج المحاصيل في الهند، بدون صور أقمار صناعية).
-هذه الواجهة مبنية حسب ملف الـ notebook الذي طلبت تنفيذه (تصنيف صورة → فئة أرض)، فتأكد أن
-هذا هو المطلوب فعلاً من الـ Milestone 3 عندك قبل التسليم.
+The provided notebook (EuroSAT — satellite image classification into 10 land-use classes grouped into `Agriculture`/`Water`/`Urban`/`Roads`/`Trees`) differs from the *"Crop Production in India"* tabular dataset topic described in `Project Proposal.pdf`. This web interface is built to match the notebook implementation (satellite image $\rightarrow$ land-use class), so please verify that this aligns with your Milestone 3 requirements prior to final submission.
